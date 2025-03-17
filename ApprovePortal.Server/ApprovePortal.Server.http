@@ -1,0 +1,6 @@
+@ApprovePortal.Server_HostAddress = http://localhost:5178
+
+GET {{ApprovePortal.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
