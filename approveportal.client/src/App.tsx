@@ -8,12 +8,12 @@ interface Forecast {
 	summary: string;
 }
 
-function App() {
+function WeatherPage(props: { token: string }) {
 	const [forecasts, setForecasts] = useState<Forecast[]>();
 
 	useEffect(() => {
-		populateWeatherData();
-	}, []);
+		populateWeatherData(props.token);
+	}, [props.token]);
 
 	const contents = forecasts === undefined
 		? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
@@ -46,12 +46,70 @@ function App() {
 		</div>
 	);
 
-	async function populateWeatherData() {
-		const response = await fetch('weatherforecast');
+	async function populateWeatherData(token: string) {
+		const response = await fetch('weatherforecast', {
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
 		if (response.ok) {
 			const data = await response.json();
 			setForecasts(data);
 		}
+	}
+}
+
+function LoginPage(props: { callback: (token: string) => void }) {
+	const [username, setUsername] = useState('');
+	const [password, setPassword] = useState('');
+	return (
+		<div>
+			<h1>Login</h1>
+			<form onSubmit={handleSubmit}>
+				<div>
+					<label>Username: </label>
+					<input type="text" value={username} onChange={e => setUsername(e.target.value)} />
+				</div>
+				<div>
+					<label>Password: </label>
+					<input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+				</div>
+				<div>
+					<button type="submit">Login</button>
+				</div>
+			</form>
+		</div>
+	);
+	async function handleSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		const response = await fetch('auth/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				Username: username,
+				Password: password
+			})
+		});
+		if (response.ok) {
+			const data = await response.json();
+			props.callback(data.token);
+		}
+	}
+}
+
+function App() {
+	const [token, setToken] = useState<string | null>(null);
+
+	function handleLogin(token: string) {
+		setToken(token);
+	}
+
+	if (token == null) {
+		return (<LoginPage callback={handleLogin} />)
+	} else {
+		return (<WeatherPage token={token} />)
 	}
 }
 

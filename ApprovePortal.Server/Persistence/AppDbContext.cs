@@ -1,4 +1,5 @@
-﻿using ApprovePortal.Server.Models;
+﻿using ApprovePortal.Server.Controllers;
+using ApprovePortal.Server.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -38,6 +39,11 @@ namespace ApprovePortal.Server.DB
 					v => JsonSerializer.Serialize(v, options),
 					v => JsonSerializer.Deserialize<List<ApprovalStepTemplateModel>>(v, options)!
 				);
+
+			// Create Default Admin
+			modelBuilder.Entity<UserModel>().HasData(
+				new UserModel { Id = 1, Username = "Admin", PasswordHash = AuthController.ComputeSha256Hash("Admin") }
+			);
 		}
 	}
 }

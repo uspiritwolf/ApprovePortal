@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ApprovePortal.Server.Controllers
 {
@@ -18,7 +19,9 @@ namespace ApprovePortal.Server.Controllers
 			_logger = logger;
 		}
 
+
 		[HttpGet]
+		[Authorize(Roles = "User")]
 		public IEnumerable<WeatherForecast> Get()
 		{
 			return Enumerable.Range(1, 5).Select(index => new WeatherForecast
