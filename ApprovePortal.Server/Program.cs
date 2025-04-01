@@ -2,6 +2,7 @@ using ApprovePortal.Server.Configs;
 using ApprovePortal.Server.DB;
 using ApprovePortal.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -33,7 +34,7 @@ var app = builder.Build();
 AppDbContext dbContext = app.Services.GetRequiredService<AppDbContext>();
 if (dbContext != null)
 {
-	dbContext.Database.EnsureCreated();
+	dbContext.Database.Migrate();
 }
 
 app.UseDefaultFiles();
