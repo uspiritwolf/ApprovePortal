@@ -1,6 +1,18 @@
-@ApprovePortal.Server_HostAddress = http://localhost:5178
+@ApprovePortal.Server_HostAddress = https://localhost:7008
+@Username = "Admin"
+@Password = "Admin"
+
+// @name auth
+POST {{ApprovePortal.Server_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+	"Username": {{Username}},
+	"Password": {{Password}}
+}
+###
 
 GET {{ApprovePortal.Server_HostAddress}}/weatherforecast/
 Accept: application/json
-
+Authorization: Bearer {{auth.response.body.$.token}}
 ###
