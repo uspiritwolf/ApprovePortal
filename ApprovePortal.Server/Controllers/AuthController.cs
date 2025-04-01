@@ -8,7 +8,7 @@ using System.Text;
 namespace ApprovePortal.Server.Controllers
 {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class AuthController(AuthService authService) : ControllerBase
 	{
 		public static string ComputeSha256Hash(string rawData) // TODO: Move to a utility class
