@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApprovePortal.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250330155528_Initial")]
+    [Migration("20250401220956_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -101,6 +101,15 @@ namespace ApprovePortal.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Email = "",
+                            PasswordHash = "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f",
+                            Username = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalModel", b =>

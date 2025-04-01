@@ -69,6 +69,11 @@ namespace ApprovePortal.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "PasswordHash", "Username" },
+                values: new object[] { 1L, "", "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f", "Admin" });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Approvals_CreatedById",
                 table: "Approvals",
