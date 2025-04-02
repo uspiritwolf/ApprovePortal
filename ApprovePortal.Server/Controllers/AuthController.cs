@@ -1,6 +1,7 @@
 ﻿using ApprovePortal.Server.DB;
 using ApprovePortal.Server.DTO;
 using ApprovePortal.Server.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,6 +42,17 @@ namespace ApprovePortal.Server.Controllers
 			return Ok(new
 			{
 				token = authService.GenerateToken(user)
+			});
+		}
+
+		[Authorize]
+		[HttpGet("me")]
+		public IActionResult Me()
+		{
+			return Ok(new
+			{
+				username = User.Identity?.Name,
+				role = User.IsInRole("User") ? "User" : "Admin"
 			});
 		}
 	}
