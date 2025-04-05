@@ -6,17 +6,28 @@ interface AuthProviderProps
 	children: ReactNode;
 }
 
+interface AuthProviderState
+{
+	isBusy: boolean;
+	token: string | null;
+	userInfo: UserInfo | null;
+}
+
 export function AuthProvider({ children }: AuthProviderProps)
 {
-	const [isBusy, setIsBusy] = useState(true);
-
-	const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
-
-	const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
+	// Better use useReducer, but not now...
+	const [state, setState] = useState<AuthProviderState>({
+		isBusy: true,
+		token: localStorage.getItem('token'),
+		userInfo: null
+	});
 
 	async function onLogin(token: string)
 	{
-		setIsBusy(true);
+		setState(prev => ({
+			...prev,
+			isBusy: true
+		}))
 
 		const response = await fetch('api/auth/me', {
 			headers: {
@@ -27,38 +38,50 @@ export function AuthProvider({ children }: AuthProviderProps)
 		if (response.ok)
 		{
 			const data = await response.json()
-			setUserInfo(data)
-			setToken(token);
-			setIsBusy(false);
+			setState(prev =>({
+				...prev,
+				isBusy: false,
+				token: token,
+				userInfo: data
+			}))
 			return true
 		}
 		else
 		{
-			setToken(null);
-			setIsBusy(false);
+			setState(prev => ({
+				...prev,
+				isBusy: false,
+				token: null,
+				userInfo: null
+			}))
 			return false
 		}
 	}
 
 	// Should only run once
 	useEffect(() => {
-		if (token != null) {
-			onLogin(token); // Start check token
+		if (state.token != null) {
+			onLogin(state.token); // Start check token
+		} else {
+			setState(prev => ({
+				...prev,
+				isBusy: false
+			}))
 		}
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [])
 
 	useEffect(() => {
-		if (token) {
-			localStorage.setItem('token', token);
+		if (state.token) {
+			localStorage.setItem('token', state.token);
 		}
 		else {
 			localStorage.removeItem('token');
 		}
-	}, [token]);
+	}, [state.token]);
 
 	return (
-		<AuthContext.Provider value={{ token, onLogin, userInfo, isBusy }}>
+		<AuthContext.Provider value={{ onLogin, ...state }}>
 			{children}
 		</AuthContext.Provider>
 	);
