@@ -1,10 +1,11 @@
 import { AuthorizeView } from '@/components/authorize-view'
+import Dashboard from '@/pages/dashboard'
 
 export default function HomePage()
 {
 	return (
 		<AuthorizeView>
-			<h1>Home Page</h1>
+			<Dashboard/>
 		</AuthorizeView>
 	)
 }
