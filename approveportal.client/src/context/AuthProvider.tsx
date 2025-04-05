@@ -8,12 +8,16 @@ interface AuthProviderProps
 
 export function AuthProvider({ children }: AuthProviderProps)
 {
+	const [isBusy, setIsBusy] = useState(true);
+
 	const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
 
 	const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
 
 	async function onLogin(token: string)
 	{
+		setIsBusy(true);
+
 		const response = await fetch('api/auth/me', {
 			headers: {
 				'Authorization': `Bearer ${token}`
@@ -25,11 +29,13 @@ export function AuthProvider({ children }: AuthProviderProps)
 			const data = await response.json()
 			setUserInfo(data)
 			setToken(token);
+			setIsBusy(false);
 			return true
 		}
 		else
 		{
 			setToken(null);
+			setIsBusy(false);
 			return false
 		}
 	}
@@ -52,7 +58,7 @@ export function AuthProvider({ children }: AuthProviderProps)
 	}, [token]);
 
 	return (
-		<AuthContext.Provider value={{ token, onLogin, userInfo }}>
+		<AuthContext.Provider value={{ token, onLogin, userInfo, isBusy }}>
 			{children}
 		</AuthContext.Provider>
 	);

@@ -10,8 +10,9 @@ export interface AuthContextType
 {
 	token: string | null;
 	onLogin: (token: string) => Promise<boolean>;
+	isBusy: boolean;
 
 	userInfo: UserInfo | null;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType>(null!);

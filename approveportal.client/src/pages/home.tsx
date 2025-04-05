@@ -1,6 +1,10 @@
-
+import { AuthorizeView } from '@/components/authorize-view'
 
 export default function HomePage()
 {
-	return (<h1>Home Page</h1>)
+	return (
+		<AuthorizeView>
+			<h1>Home Page</h1>
+		</AuthorizeView>
+	)
 }
