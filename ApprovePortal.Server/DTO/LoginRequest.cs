@@ -1,6 +1,6 @@
 ﻿namespace ApprovePortal.Server.DTO
 {
-	public class LoginRequest
+	public record LoginRequest
 	{
 		public required string Username { get; set; }
 
