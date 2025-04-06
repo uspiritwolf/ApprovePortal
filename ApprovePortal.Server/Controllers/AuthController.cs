@@ -52,6 +52,8 @@ namespace ApprovePortal.Server.Controllers
 			return Ok(new
 			{
 				username = User.Identity?.Name,
+				// TODO: Get email from database
+				email = "Not implemented",
 				role = User.IsInRole("User") ? "User" : "Admin"
 			});
 		}

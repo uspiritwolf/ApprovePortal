@@ -1,88 +1,99 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { AuthContext, UserInfo } from '@/context/AuthContext'
+import { ReactNode, useCallback, useEffect, useReducer } from 'react';
+import { AuthContext, UserInfo, AuthActions, AuthDispatchContext } from '@/context/AuthContext'
 
-interface AuthProviderProps
-{
+interface AuthProviderProps {
 	children: ReactNode;
 }
 
-interface AuthProviderState
-{
+type AuthProviderState = {
+	type: 'LoggedIn' | 'LoggedOut' | 'Checking';
 	isBusy: boolean;
 	token: string | null;
-	userInfo: UserInfo | null;
+	user: UserInfo | null;
+
+	lastError?: string;
 }
 
-export function AuthProvider({ children }: AuthProviderProps)
-{
-	// Better use useReducer, but not now...
-	const [state, setState] = useState<AuthProviderState>({
-		isBusy: true,
-		token: localStorage.getItem('token'),
-		userInfo: null
-	});
+function authReducer(state: AuthProviderState, action: AuthActions): AuthProviderState {
+	switch (action.type) {
+		case 'OnLogin':
+			return {
+				...state,
+				type: 'Checking',
+				token: action.token,
+				isBusy: true
+			}
+		case 'LoggedIn':
+			localStorage.setItem('token', state.token!);
+			return {
+				...state,
+				type: 'LoggedIn',
+				user: action.user,
+				isBusy: false
+			}
+		case 'LogOut':
+			localStorage.removeItem('token');
+			return {
+				...state,
+				type: 'LoggedOut',
+				user: null,
+				token: null,
+				isBusy: false
+			}
+		default:
+			return state;
+	}
+}
 
-	async function onLogin(token: string)
-	{
-		setState(prev => ({
-			...prev,
-			isBusy: true
-		}))
+const initialAuthState: AuthProviderState = {
+	type: 'Checking',
+	isBusy: true,
+	token: localStorage.getItem('token'),
+	user: null
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
+	const [state, dispatch] = useReducer(authReducer, initialAuthState);
+
+	const fetchUserInfo = useCallback(async () => {
+		if (!state.token) {
+			dispatch({ type: 'LogOut' })
+			return
+		}
 
 		const response = await fetch('api/auth/me', {
 			headers: {
-				'Authorization': `Bearer ${token}`
+				'Authorization': `Bearer ${state.token}`
 			}
 		})
 
-		if (response.ok)
-		{
+		if (response.ok) {
 			const data = await response.json()
-			setState(prev =>({
-				...prev,
-				isBusy: false,
-				token: token,
-				userInfo: data
-			}))
-			return true
-		}
-		else
-		{
-			setState(prev => ({
-				...prev,
-				isBusy: false,
-				token: null,
-				userInfo: null
-			}))
-			return false
-		}
-	}
-
-	// Should only run once
-	useEffect(() => {
-		if (state.token != null) {
-			onLogin(state.token); // Start check token
-		} else {
-			setState(prev => ({
-				...prev,
-				isBusy: false
-			}))
-		}
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [])
-
-	useEffect(() => {
-		if (state.token) {
-			localStorage.setItem('token', state.token);
+			dispatch({
+				type: 'LoggedIn',
+				user: data
+			})
 		}
 		else {
-			localStorage.removeItem('token');
+			dispatch({ type: 'LogOut' })
 		}
-	}, [state.token]);
+	}, [state.token])
+
+	useEffect(() => {
+		switch (state.type) {
+			case 'Checking':
+				fetchUserInfo()
+				break;
+			default:
+				break;
+		}
+	}, [state.type, fetchUserInfo])
 
 	return (
-		<AuthContext.Provider value={{ onLogin, ...state }}>
-			{children}
+		<AuthContext.Provider value={state}>
+			<AuthDispatchContext.Provider value={dispatch}>
+				{children}
+			</AuthDispatchContext.Provider>
 		</AuthContext.Provider>
 	);
 };

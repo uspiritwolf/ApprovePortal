@@ -1,18 +1,19 @@
 import { createContext } from 'react';
-
-export interface UserInfo
-{
-	username: string;
-	role: string;
-}
+import { UserInfo } from '@/types/UserInfo';
 
 export interface AuthContextType
 {
-	token: string | null;
-	onLogin: (token: string) => Promise<boolean>;
 	isBusy: boolean;
-
-	userInfo: UserInfo | null;
+	token: string | null;
+	user: UserInfo | null;
 }
 
+export type AuthActions =
+	| { type: 'OnLogin', token: string }
+	| { type: 'LoggedIn', user: UserInfo }
+	| { type: 'LogOut' };
+
 export const AuthContext = createContext<AuthContextType>(null!);
+export const AuthDispatchContext = createContext<React.Dispatch<AuthActions>>(null!);
+
+export type { UserInfo };

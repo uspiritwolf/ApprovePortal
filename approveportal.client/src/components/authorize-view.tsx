@@ -8,8 +8,8 @@ interface AuthorizeViewProps {
 }
 
 export function AuthorizeView({ children, redirectPath = "/login" }: AuthorizeViewProps) {
-	const { userInfo, isBusy } = useContext(AuthContext);
-	const isAuthorized = !!userInfo;
+	const { user, isBusy } = useContext(AuthContext);
+	const isAuthorized = !!user;
 
 	if (isBusy) {
 		return <div>Authorization...</div>;
