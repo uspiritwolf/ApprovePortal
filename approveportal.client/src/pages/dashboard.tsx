@@ -14,7 +14,11 @@ import {
 	SidebarTrigger,
 } from "@/components/ui/sidebar"
 
+import { useContext } from "react"
+import { ApprovalContext } from "@/context/ApprovalContext"
+
 export default function Dashboard() {
+	const { approvals } = useContext(ApprovalContext)
 	return (
 		<SidebarProvider
 			style={
@@ -23,7 +27,7 @@ export default function Dashboard() {
 				} as React.CSSProperties
 			}
 		>
-			<InboxSidebar />
+			<InboxSidebar approvals={approvals} />
 			<SidebarInset>
 				<header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
 					<SidebarTrigger className="-ml-1" />
