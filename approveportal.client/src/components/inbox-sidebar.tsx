@@ -16,8 +16,8 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@/components/ui/sidebar"
-import { Switch } from "@/components/ui/switch"
 
+import { NewApprovalEntry } from "@/components/new-approval-dialog"
 import { Approval } from "@/types/Approval"
 
 interface InboxSidebarProps extends React.ComponentProps<typeof Sidebar> {
@@ -135,8 +135,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 							{activeItem?.title}
 						</div>
 						<Label className="flex items-center gap-2 text-sm">
-							<span>Unreads</span>
-							<Switch className="shadow-none" />
+							<NewApprovalEntry />
 						</Label>
 					</div>
 					<SidebarInput placeholder="Type to search..." />
