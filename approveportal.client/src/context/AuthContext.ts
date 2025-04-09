@@ -6,14 +6,10 @@ export interface AuthContextType
 	isBusy: boolean;
 	token: string | null;
 	user: UserInfo | null;
+
+	onLogin: (token: string) => Promise<void>;
 }
 
-export type AuthActions =
-	| { type: 'OnLogin', token: string }
-	| { type: 'LoggedIn', user: UserInfo }
-	| { type: 'LogOut' };
-
 export const AuthContext = createContext<AuthContextType>(null!);
-export const AuthDispatchContext = createContext<React.Dispatch<AuthActions>>(null!);
 
 export type { UserInfo };

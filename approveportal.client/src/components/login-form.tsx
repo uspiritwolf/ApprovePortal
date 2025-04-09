@@ -18,7 +18,7 @@ import {
 	AlertTitle,
 } from "@/components/ui/alert"
 
-import { AuthDispatchContext } from "@/context/AuthContext"
+import { AuthContext } from "@/context/AuthContext"
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement>
 {
@@ -28,7 +28,7 @@ interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement>
 export function LoginForm({ className, ...props }: LoginFormProps)
 {
 	const navigate = useNavigate();
-	const authDispatch = useContext(AuthDispatchContext);
+	const { onLogin } = useContext(AuthContext);
 	const [error, setError] = useState<string | null>(null);
 
 	async function sumbit(formData: FormData) {
@@ -47,12 +47,14 @@ export function LoginForm({ className, ...props }: LoginFormProps)
 		if (response.ok)
 		{
 			setError('')
-			const token = (await response.json()).token
-			authDispatch({
-				type: 'OnLogin',
-				token: token,
-			})
-			navigate('/')
+			const res = await response.json()
+			onLogin(res.token as string)
+				.then(() => {
+					navigate('/')
+				})
+				.catch((e: Error) => {
+					setError(e.message)
+				});
 		}
 		else
 		{

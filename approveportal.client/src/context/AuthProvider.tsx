@@ -1,41 +1,40 @@
-import { ReactNode, useCallback, useEffect, useReducer } from 'react';
-import { AuthContext, UserInfo, AuthActions, AuthDispatchContext } from '@/context/AuthContext'
+import { ReactNode, useCallback, useReducer, useEffect } from 'react';
+import { AuthContext, UserInfo } from '@/context/AuthContext'
 
 interface AuthProviderProps {
 	children: ReactNode;
 }
 
 type AuthProviderState = {
-	type: 'LoggedIn' | 'LoggedOut' | 'Checking';
 	isBusy: boolean;
 	token: string | null;
 	user: UserInfo | null;
-
-	lastError?: string;
 }
+
+export type AuthActions =
+	| { type: 'REFRESH_START', token: string }
+	| { type: 'REFRESH_SUCCESS', user: UserInfo }
+	| { type: 'LOG_OUT' };
 
 function authReducer(state: AuthProviderState, action: AuthActions): AuthProviderState {
 	switch (action.type) {
-		case 'OnLogin':
+		case 'REFRESH_START':
 			return {
 				...state,
-				type: 'Checking',
 				token: action.token,
 				isBusy: true
 			}
-		case 'LoggedIn':
+		case 'REFRESH_SUCCESS':
 			localStorage.setItem('token', state.token!);
 			return {
 				...state,
-				type: 'LoggedIn',
 				user: action.user,
 				isBusy: false
 			}
-		case 'LogOut':
+		case 'LOG_OUT':
 			localStorage.removeItem('token');
 			return {
 				...state,
-				type: 'LoggedOut',
 				user: null,
 				token: null,
 				isBusy: false
@@ -46,54 +45,56 @@ function authReducer(state: AuthProviderState, action: AuthActions): AuthProvide
 }
 
 const initialAuthState: AuthProviderState = {
-	type: 'Checking',
 	isBusy: true,
-	token: localStorage.getItem('token'),
+	token: null,
 	user: null
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
 	const [state, dispatch] = useReducer(authReducer, initialAuthState);
 
-	const fetchUserInfo = useCallback(async () => {
-		if (!state.token) {
-			dispatch({ type: 'LogOut' })
+	const onLogin = useCallback(async (token: string | null) => {
+		if (!token) {
+			dispatch({ type: 'LOG_OUT' })
 			return
+		} else {
+			dispatch({ type: 'REFRESH_START', token })
 		}
 
 		const response = await fetch('api/auth/me', {
 			headers: {
-				'Authorization': `Bearer ${state.token}`
+				'Authorization': `Bearer ${token}`
 			}
 		})
 
 		if (response.ok) {
-			const data = await response.json()
+			const data = await response.json() as UserInfo
 			dispatch({
-				type: 'LoggedIn',
+				type: 'REFRESH_SUCCESS',
 				user: data
 			})
 		}
 		else {
-			dispatch({ type: 'LogOut' })
+			dispatch({ type: 'LOG_OUT' })
+			throw new Error(response.statusText);
 		}
-	}, [state.token])
+	}, [dispatch])
 
+	// Automatically call onLogin with the token from localStorage on mount
 	useEffect(() => {
-		switch (state.type) {
-			case 'Checking':
-				fetchUserInfo()
-				break;
-			default:
-				break;
+		const token = localStorage.getItem('token');
+		if (token) {
+			onLogin(token).catch((e: Error) => {
+				console.warn('Failed to login: ' + e.message);
+			});
+		} else {
+			dispatch({ type: 'LOG_OUT' })
 		}
-	}, [state.type, fetchUserInfo])
+	}, [onLogin]);
 
 	return (
-		<AuthContext.Provider value={state}>
-			<AuthDispatchContext.Provider value={dispatch}>
-				{children}
-			</AuthDispatchContext.Provider>
+		<AuthContext.Provider value={{ ...state, onLogin }}>
+			{children}
 		</AuthContext.Provider>
 	);
 };
