@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import { UserSelector } from '@/components/user-selector'
 
 interface NewApprovalContentProps extends React.ComponentProps<typeof DialogContent> {
 	onOpenChange: (open: boolean) => void
@@ -26,35 +29,45 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 		})
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const noAction = (e: any) => { e.preventDefault() };
 	return (
-		<DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => { e.preventDefault() }}>
+		<DialogContent className="sm:max-w-[425px]" onInteractOutside={noAction} onEscapeKeyDown={noAction}>
 			{isPending && (
 				<div className="absolute inset-0 bg-white/70 z-10 flex items-center justify-center text-lg font-semibold">
 					Processing...
 				</div>
 			)}
 			<DialogHeader>
-				<DialogTitle>Edit profile</DialogTitle>
+				<DialogTitle>Create Approval</DialogTitle>
 				<DialogDescription>
-					Make changes to your profile here. Click save when you're done.
+					Creating a new approval process.
 				</DialogDescription>
 			</DialogHeader>
 			<div className="grid gap-4 py-4">
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="name" className="text-right">
-						Name
+					<Label htmlFor="subject">
+						Tittle
 					</Label>
-					<Input id="name" value="Pedro Duarte" className="col-span-3" />
+					<Input id="subject" value="" className="col-span-3" />
+				</div>
+				<Separator />
+				<div className="grid grid-cols-4 w-full gap-1.5">
+					<Label>Approver</Label>
+					<Button variant="outline" size="icon">+</Button>
 				</div>
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="username" className="text-right">
-						Username
-					</Label>
-					<Input id="username" value="@peduarte" className="col-span-3" />
+					<Label>0</Label>
+					<UserSelector />
+				</div>
+				<Separator />
+				<div className="grid w-full gap-1.5">
+					<Label htmlFor="description">Description</Label>
+					<Textarea placeholder="Type your message here." id="description" />
 				</div>
 			</div>
 			<DialogFooter>
-				<Button type="submit" onClick={handleSubmit}>Save changes</Button>
+				<Button type="submit" onClick={handleSubmit}>Create</Button>
 			</DialogFooter>
 		</DialogContent>
 	)
