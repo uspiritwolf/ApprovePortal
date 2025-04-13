@@ -20,6 +20,7 @@ import {
 import { NewApprovalEntry } from "@/components/new-approval-dialog"
 import { Approval } from "@/types/Approval"
 import { AuthContext } from "@/context/AuthContext"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 interface InboxSidebarProps extends React.ComponentProps<typeof Sidebar> {
 	approvals: Approval[]
@@ -50,12 +51,23 @@ const navMain = [
 
 export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 	const { user } = useContext(AuthContext)
-	const [activeItem, setActiveItem] = useState(navMain[0])
+	const [activeNavItem, setActiveNavItem] = useState(navMain[0])
 	const { setOpen } = useSidebar()
+	const [searchText, setSearchText] = useState('')
 
+	const navigate = useNavigate()
+	const [searchParams] = useSearchParams();
+	const currentApproval = searchParams.get("a")
 	function handleFilter(approval: Approval) {
-		if (activeItem.status) {
-			return activeItem.status === approval.status && approval.createdById == user!.id
+		if (activeNavItem.status) {
+			return activeNavItem.status === approval.status && approval.createdById == user!.id
+		}
+		if (searchText && searchText !== '') {
+			return (
+				approval.name.toLowerCase().includes(searchText.toLowerCase()) ||
+				approval.title.toLowerCase().includes(searchText.toLowerCase()) ||
+				approval.description.toLowerCase().includes(searchText.toLowerCase())
+			)
 		}
 		return true;
 	}
@@ -74,7 +86,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-								<a>
+								<a onClick={() => navigate("/")}>
 									<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
 										<Command className="size-4" />
 									</div>
@@ -99,10 +111,10 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 												hidden: false,
 											}}
 											onClick={() => {
-												setActiveItem(item)
+												setActiveNavItem(item)
 												setOpen(true)
 											}}
-											isActive={activeItem?.title === item.title}
+											isActive={activeNavItem?.title === item.title}
 											className="px-2.5 md:px-2"
 										>
 											<item.icon />
@@ -125,28 +137,28 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 				<SidebarHeader className="gap-3.5 border-b p-4">
 					<div className="flex w-full items-center justify-between">
 						<div className="text-base font-medium text-foreground">
-							{activeItem?.title}
+							{activeNavItem?.title}
 						</div>
 						<Label className="flex items-center gap-2 text-sm">
 							<NewApprovalEntry />
 						</Label>
 					</div>
-					<SidebarInput placeholder="Type to search..." />
+					<SidebarInput placeholder="Type to search..." value={searchText} onChange={(e) => setSearchText(e.currentTarget.value)} />
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup className="px-0">
 						<SidebarGroupContent>
 							{approvals.filter(handleFilter).map((approval) => (
 								<a
-									href="#"
-									key={approval.email}
-									className="flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+									onClick={() => navigate(`/?a=${approval.id}`)}
+									key={approval.id}
+									className={`flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${currentApproval === approval.id ? 'bg-sidebar-accent' : ''}`}
 								>
 									<div className="flex w-full items-center gap-2">
 										<span>{approval.name}</span>{" "}
 										<span className="ml-auto text-xs">{approval.date}</span>
 									</div>
-									<span className="font-medium">{approval.subject}</span>
+									<span className="font-medium">{approval.title}</span>
 									<span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
 										{approval.description}
 									</span>

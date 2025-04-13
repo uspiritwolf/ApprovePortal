@@ -4,7 +4,7 @@ export type Approval = {
 	createdById: string;
 	name: string;
 	email: string;
-	subject: string;
+	title: string;
 	date: string;
 	description: string;
 	status: 'Approved' | 'Rejected' | 'Pending' | 'Draft';
