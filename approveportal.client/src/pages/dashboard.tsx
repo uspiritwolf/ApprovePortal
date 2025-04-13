@@ -6,9 +6,14 @@ import {
 
 import { useContext } from "react"
 import { ApprovalContext } from "@/context/ApprovalContext"
+import { useSearchParams } from "react-router-dom"
+import { ApprovalDetails } from "@/components/approval-details"
+
 
 export default function Dashboard() {
 	const { approvals } = useContext(ApprovalContext)
+	const [searchParams] = useSearchParams();
+	const currentApproval = approvals.find((approval) => approval.id === searchParams.get("id"));
 	return (
 		<SidebarProvider
 			style={
@@ -19,14 +24,7 @@ export default function Dashboard() {
 		>
 			<InboxSidebar approvals={approvals} />
 			<SidebarInset>
-				<div className="flex flex-1 flex-col gap-4 p-4">
-					{Array.from({ length: 24 }).map((_, index) => (
-						<div
-							key={index}
-							className="aspect-video h-12 w-full rounded-lg bg-muted/50"
-						/>
-					))}
-				</div>
+				{currentApproval && <ApprovalDetails value={currentApproval} />}
 			</SidebarInset>
 		</SidebarProvider>
 	)

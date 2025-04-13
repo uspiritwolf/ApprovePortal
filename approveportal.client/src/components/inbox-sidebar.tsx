@@ -57,7 +57,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 
 	const navigate = useNavigate()
 	const [searchParams] = useSearchParams();
-	const currentApproval = searchParams.get("a")
+	const currentApproval = searchParams.get("id")
 	function handleFilter(approval: Approval) {
 		if (activeNavItem.status) {
 			return activeNavItem.status === approval.status && approval.createdById == user!.id
@@ -150,7 +150,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 						<SidebarGroupContent>
 							{approvals.filter(handleFilter).map((approval) => (
 								<a
-									onClick={() => navigate(`/?a=${approval.id}`)}
+									onClick={() => navigate(`/?id=${approval.id}`)}
 									key={approval.id}
 									className={`flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${currentApproval === approval.id ? 'bg-sidebar-accent' : ''}`}
 								>
