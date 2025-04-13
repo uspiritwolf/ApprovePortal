@@ -9,6 +9,11 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -17,7 +22,6 @@ import { UserSelector } from '@/components/user-selector'
 import { UserBaseInfo } from "@/types/UserInfo"
 import { AuthContext } from "@/context/AuthContext"
 import { ApprovalContext } from "@/context/ApprovalContext"
-
 interface NewApprovalContentProps extends React.ComponentProps<typeof DialogContent> {
 	onOpenChange: (open: boolean) => void
 }
@@ -32,11 +36,13 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 	const [description, setDescription] = useState<string>("")
 	const [title, setTitle] = useState<string>("")
 
-	const canSubmit = approvers.every((user) => user !== undefined) && title.length > 0 && description.length > 0
+	const [error, setError] = useState<string | null>(null)
+
+	const canSubmit = approvers.every((user) => user !== undefined) && title.length > 0 && description.length > 0 && !error
 
 	const handleSubmit = () => {
 		startTransition(async () => {
-			const res = await fetch("/api/approval/create", {
+			const response = await fetch("/api/approval/create", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -48,8 +54,9 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 					Description: description,
 				}),
 			})
-			if (!res.ok) {
-				console.error("Failed to create approval")
+			if (!response.ok) {
+				const errorStr = await response.text()
+				setError(errorStr)
 				return
 			}
 			await refresh()
@@ -58,6 +65,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 	}
 
 	const handleSelectUser = (key: number, user: UserBaseInfo | undefined) => {
+		setError(null);
 		setApprovers((prev) => {
 			const newUsers = [...prev]
 			newUsers[key] = user
@@ -66,6 +74,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 	}
 
 	const addUser = () => {
+		setError(null);
 		setApprovers((prev) => {
 			const newUsers = [...prev]
 			newUsers.push(undefined)
@@ -87,13 +96,21 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 				<DialogDescription>
 					Creating a new approval process.
 				</DialogDescription>
+				{error &&
+					<Alert variant="destructive">
+						<AlertTitle>Failed</AlertTitle>
+						<AlertDescription>
+							{error}
+						</AlertDescription>
+					</Alert>
+				}
 			</DialogHeader>
 			<div className="grid gap-4 py-4">
 				<div className="grid grid-cols-4 items-center gap-4">
 					<Label htmlFor="Title">
 						Tittle
 					</Label>
-					<Input id="Title" className="col-span-3" value={title} onChange={(e) => { setTitle(e.currentTarget.value) }} />
+					<Input id="Title" className="col-span-3" value={title} onChange={(e) => { setError(null); setTitle(e.currentTarget.value) }} />
 				</div>
 				<Separator />
 				<div className="grid grid-cols-4 w-full gap-1.5">
@@ -109,7 +126,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 				<Separator />
 				<div className="grid w-full gap-1.5">
 					<Label htmlFor="description">Description</Label>
-					<Textarea placeholder="Type your message here." id="description" value={description} onChange={(e) => { setDescription(e.currentTarget.value) }} />
+					<Textarea placeholder="Type your message here." id="description" value={description} onChange={(e) => { setError(null); setDescription(e.currentTarget.value) }} />
 				</div>
 			</div>
 			<DialogFooter>
