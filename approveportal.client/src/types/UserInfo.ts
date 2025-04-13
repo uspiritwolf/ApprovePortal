@@ -6,9 +6,6 @@ export interface UserBaseInfo {
 	name: string
 }
 
-export type UserProfileInfo = {
-	id: string
-	username: string;
-	email: string;
+export interface UserProfileInfo extends UserBaseInfo {
 	role: string;
 }

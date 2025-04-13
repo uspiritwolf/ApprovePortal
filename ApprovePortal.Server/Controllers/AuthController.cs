@@ -57,6 +57,7 @@ namespace ApprovePortal.Server.Controllers
 				id = user.Id,
 				username = user.Username,
 				email = user.Email,
+				name = user.Name,
 				role = User.IsInRole("User") ? "User" : ""
 			});
 		}
