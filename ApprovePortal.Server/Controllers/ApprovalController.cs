@@ -18,18 +18,31 @@ namespace ApprovePortal.Server.Controllers
 		{
 			var user = db.GetCurrentUser(this);
 
-			var result = user.MyApprovals.Select(a => new
+			var myApprovals = user.MyApprovals.Select(a => new
 			{
 				Id = a.Id,
-				Name = a.CreatedBy!.Username,
+				Name = a.CreatedBy!.Name,
 				Email = a.CreatedBy.Email,
 				Subject = a.Title,
 				Date = a.CreatedAt.ToString("MMMM dd, yyyy"),
 				Description = a.Description,
 				Status = a.ComputeStatus().ToString(),
-			}).ToList();
+			});
 
-			return Ok(result);
+			var otherApprovals = user.Approvals.Select(a => new
+			{
+				Id = a.ApprovalId,
+				Name = a.Approval!.CreatedBy.Name,
+				Email = a.Approval!.CreatedBy.Email,
+				Subject = a.Approval!.Title,
+				Date = a.Approval.CreatedAt.ToString("MMMM dd, yyyy"),
+				Description = a.Approval.Description,
+				Status = a.Status.ToString(),
+			});
+
+			var allApprovals = myApprovals.Concat(otherApprovals).ToList();
+
+			return Ok(allApprovals);
 		}
 
 		[HttpPost("create")]
