@@ -27,7 +27,7 @@ import { useContext } from "react"
 import { AuthContext } from "@/context/AuthContext"
 
 export function NavUser() {
-	const { user } = useContext(AuthContext)
+	const { user, logout } = useContext(AuthContext)
 	const { isMobile } = useSidebar()
 
 	return (
@@ -69,7 +69,7 @@ export function NavUser() {
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
+						<DropdownMenuItem onClick={logout}>
 							<LogOut />
 							Log out
 						</DropdownMenuItem>

@@ -80,6 +80,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 		}
 	}, [dispatch])
 
+	const logout = useCallback(async () => {
+		dispatch({ type: 'LOG_OUT' })
+	}, [dispatch]);
+
 	// Automatically call onLogin with the token from localStorage on mount
 	useEffect(() => {
 		const token = localStorage.getItem('token');
@@ -93,7 +97,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 	}, [onLogin]);
 
 	return (
-		<AuthContext.Provider value={{ ...state, onLogin }}>
+		<AuthContext.Provider value={{ ...state, onLogin, logout }}>
 			{children}
 		</AuthContext.Provider>
 	);
