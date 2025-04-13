@@ -17,11 +17,18 @@ namespace ApprovePortal.Server.Persistence
 
 	public static class DbExtension
 	{
-		public static UserModel GetCurrentUser(this AppDbContext db, ControllerBase controller)
+		public static Guid GetUserId(this ControllerBase controller)
 		{
 			var userIdClaim = controller.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 			if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
 				throw new InvalidUserException("Invalid user ID in token.");
+
+			return userId;
+		}
+
+		public static UserModel GetCurrentUser(this AppDbContext db, ControllerBase controller)
+		{
+			var userId = controller.GetUserId();
 
 			var user = db.Users.Find(userId);
 			if (user == null)

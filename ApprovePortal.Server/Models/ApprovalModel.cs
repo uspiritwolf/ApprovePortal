@@ -24,16 +24,16 @@ namespace ApprovePortal.Server.Models
 		public virtual UserModel CreatedBy { get; init; } = null!;
 
 		[InverseProperty(nameof(ApprovalApproverModel.Approval))]
-		public virtual ICollection<ApprovalApproverModel> Approver { get; init; } = null!;
+		public virtual ICollection<ApprovalApproverModel> Approvers { get; init; } = new List<ApprovalApproverModel>();
 
 		// Business logic to compute the current approval status
 		public ApprovalStatus ComputeStatus()
 		{
-			if (Approver.All(a => a.Status == ApprovalStatus.Approved))
+			if (Approvers.All(a => a.Status == ApprovalStatus.Approved))
 			{
 				return ApprovalStatus.Approved;
 			}
-			if (Approver.Any(a => a.Status == ApprovalStatus.Rejected))
+			if (Approvers.Any(a => a.Status == ApprovalStatus.Rejected))
 			{
 				return ApprovalStatus.Rejected;
 			}

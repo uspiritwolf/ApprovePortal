@@ -60,11 +60,11 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 	const currentApproval = searchParams.get("id")
 	function handleFilter(approval: Approval) {
 		if (activeNavItem.status) {
-			return activeNavItem.status === approval.status && approval.createdById == user!.id
+			return activeNavItem.status === approval.status && approval.createdBy.id == user!.id
 		}
 		if (searchText && searchText !== '') {
 			return (
-				approval.name.toLowerCase().includes(searchText.toLowerCase()) ||
+				approval.createdBy.name.toLowerCase().includes(searchText.toLowerCase()) ||
 				approval.title.toLowerCase().includes(searchText.toLowerCase()) ||
 				approval.description.toLowerCase().includes(searchText.toLowerCase())
 			)
@@ -155,7 +155,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 									className={`flex flex-col items-start gap-2 whitespace-nowrap border-b p-4 text-sm leading-tight last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${currentApproval === approval.id ? 'bg-sidebar-accent' : ''}`}
 								>
 									<div className="flex w-full items-center gap-2">
-										<span>{approval.name}</span>{" "}
+										<span>{approval.createdBy.name}</span>{" "}
 										<span className="ml-auto text-xs">{approval.date}</span>
 									</div>
 									<span className="font-medium">{approval.title}</span>

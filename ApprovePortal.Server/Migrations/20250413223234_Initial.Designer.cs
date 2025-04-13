@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApprovePortal.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250413200000_Initial")]
+    [Migration("20250413223234_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -127,7 +127,7 @@ namespace ApprovePortal.Server.Migrations
             modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalApproverModel", b =>
                 {
                     b.HasOne("ApprovePortal.Server.Models.ApprovalModel", "Approval")
-                        .WithMany("Approver")
+                        .WithMany("Approvers")
                         .HasForeignKey("ApprovalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -156,7 +156,7 @@ namespace ApprovePortal.Server.Migrations
 
             modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalModel", b =>
                 {
-                    b.Navigation("Approver");
+                    b.Navigation("Approvers");
                 });
 
             modelBuilder.Entity("ApprovePortal.Server.Models.UserModel", b =>
