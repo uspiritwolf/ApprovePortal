@@ -21,6 +21,7 @@ namespace ApprovePortal.Server.Controllers
 			var myApprovals = user.MyApprovals.Select(a => new
 			{
 				Id = a.Id,
+				CreatedById = a.CreatedById,
 				Name = a.CreatedBy!.Name,
 				Email = a.CreatedBy.Email,
 				Subject = a.Title,
@@ -32,6 +33,7 @@ namespace ApprovePortal.Server.Controllers
 			var otherApprovals = user.Approvals.Select(a => new
 			{
 				Id = a.ApprovalId,
+				CreatedById = a.Approval!.CreatedById,
 				Name = a.Approval!.CreatedBy.Name,
 				Email = a.Approval!.CreatedBy.Email,
 				Subject = a.Approval!.Title,

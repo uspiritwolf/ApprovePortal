@@ -1,5 +1,5 @@
-import * as React from "react"
-import { ArchiveX, Command, File, Inbox, Send } from "lucide-react"
+import { useContext, useState } from "react"
+import { Command, Inbox, Send, CircleCheck, Ban } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import { Label } from "@/components/ui/label"
@@ -19,6 +19,7 @@ import {
 
 import { NewApprovalEntry } from "@/components/new-approval-dialog"
 import { Approval } from "@/types/Approval"
+import { AuthContext } from "@/context/AuthContext"
 
 interface InboxSidebarProps extends React.ComponentProps<typeof Sidebar> {
 	approvals: Approval[]
@@ -27,44 +28,36 @@ interface InboxSidebarProps extends React.ComponentProps<typeof Sidebar> {
 const navMain = [
 	{
 		title: "Inbox",
-		url: "#",
 		icon: Inbox,
-		isActive: true,
-		status: "Pending",
-		authorMe: false
-	},
-	{
-		title: "Drafts",
-		url: "#",
-		icon: File,
-		isActive: false,
-		status: "Draft",
-		authorMe: false
+		status: undefined,
 	},
 	{
 		title: "Sent",
-		url: "#",
 		icon: Send,
-		isActive: false,
 		status: "Pending",
-		authorMe: true
 	},
 	{
-		title: "Archive",
-		url: "#",
-		icon: ArchiveX,
-		isActive: false,
+		title: "Approved",
+		icon: CircleCheck,
 		status: "Approved",
-		authorMe: false
+	},
+	{
+		title: "Rejected",
+		icon: Ban,
+		status: "Rejected",
 	},
 ]
 
 export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
-	const [activeItem, setActiveItem] = React.useState(navMain[0])
+	const { user } = useContext(AuthContext)
+	const [activeItem, setActiveItem] = useState(navMain[0])
 	const { setOpen } = useSidebar()
 
 	function handleFilter(approval: Approval) {
-		return activeItem.status === approval.status;
+		if (activeItem.status) {
+			return activeItem.status === approval.status && approval.createdById == user!.id
+		}
+		return true;
 	}
 
 	return (
@@ -81,7 +74,7 @@ export function InboxSidebar({ approvals, ...props }: InboxSidebarProps) {
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-								<a href="#">
+								<a>
 									<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
 										<Command className="size-4" />
 									</div>
