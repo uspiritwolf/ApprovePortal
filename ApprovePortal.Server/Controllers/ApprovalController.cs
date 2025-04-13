@@ -18,7 +18,7 @@ namespace ApprovePortal.Server.Controllers
 		{
 			var user = db.GetCurrentUser(this);
 
-			var result = user.Approvals!.Select(a => new
+			var result = user.MyApprovals.Select(a => new
 			{
 				Id = a.Id,
 				Name = a.CreatedBy!.Username,
@@ -26,36 +26,51 @@ namespace ApprovePortal.Server.Controllers
 				Subject = a.Title,
 				Date = a.CreatedAt.ToString("MMMM dd, yyyy"),
 				Description = a.Description,
-				Status = a.State.Status.ToString(),
+				Status = a.ComputeStatus().ToString(),
 			}).ToList();
 
 			return Ok(result);
 		}
 
 		[HttpPost("create")]
-		public IActionResult CreateApproval([FromBody] CreateApprovalRequest req, [FromServices] AppDbContext db)
+		public async Task<IActionResult> CreateApproval([FromBody] CreateApprovalRequest req, [FromServices] AppDbContext db)
 		{
-			var user = db.GetCurrentUser(this);
+			using var transaction = await db.Database.BeginTransactionAsync();
 
-			_ = db.Approvals.Add(new ApprovalModel
+			try
 			{
-				Title = req.Title,
-				Description = req.Description,
-				CreatedById = user.Id,
-				CreatedAt = DateTime.UtcNow,
-				State = new ApprovalStateModel
+				var user = db.GetCurrentUser(this);
+
+				var entry = await db.Approvals.AddAsync(new ApprovalModel
 				{
-					Steps = req.ApproverIds.Select(s => new ApprovalStateStepModel
-					{
-						ApproverId = s,
-						Status = ApprovalStatus.Pending,
-					}).ToList(),
-				}
-			});
+					Title = req.Title,
+					Description = req.Description,
+					CreatedById = user.Id,
+					CreatedAt = DateTime.UtcNow,
+				});
 
-			db.SaveChanges();
+				await db.SaveChangesAsync();
 
-			return Ok();
+				var tasks = req.ApproverIds.Select(approverId => db.ApprovalApprovers.AddAsync(new ApprovalApproverModel
+				{
+					ApprovalId = entry.Entity.Id,
+					UserId = approverId,
+					Status = ApprovalStatus.Pending,
+				}).AsTask());
+
+				Task.WaitAll(tasks.ToList());
+
+				await db.SaveChangesAsync();
+
+				await transaction.CommitAsync();
+
+				return Ok();
+			}
+			catch (Exception ex)
+			{
+				await transaction.RollbackAsync();
+				return BadRequest(ex.Message);
+			}
 		}
 	}
 }

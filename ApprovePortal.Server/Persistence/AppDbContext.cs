@@ -1,7 +1,6 @@
 ﻿using ApprovePortal.Server.Controllers;
 using ApprovePortal.Server.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace ApprovePortal.Server.DB
 {
@@ -11,7 +10,7 @@ namespace ApprovePortal.Server.DB
 
 		public DbSet<ApprovalModel> Approvals { get; set; }
 
-		public DbSet<ApprovalTemplateModel> ApprovalTemplates { get; set; }
+		public DbSet<ApprovalApproverModel> ApprovalApprovers { get; set; }
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
@@ -24,22 +23,6 @@ namespace ApprovePortal.Server.DB
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			var options = new JsonSerializerOptions { };
-
-			_ = modelBuilder.Entity<ApprovalModel>()
-				.Property(a => a.State)
-				.HasConversion(
-					v => JsonSerializer.Serialize(v, options),
-					v => JsonSerializer.Deserialize<ApprovalStateModel>(v, options)!
-				);
-
-			_ = modelBuilder.Entity<ApprovalTemplateModel>()
-				.Property(a => a.Steps)
-				.HasConversion(
-					v => JsonSerializer.Serialize(v, options),
-					v => JsonSerializer.Deserialize<List<ApprovalStepTemplateModel>>(v, options)!
-				);
-
 			// Create Default Users
 			_ = modelBuilder.Entity<UserModel>().HasData(
 				new UserModel

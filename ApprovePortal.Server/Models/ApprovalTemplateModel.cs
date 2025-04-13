@@ -3,11 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ApprovePortal.Server.Models
 {
-	public class ApprovalStepTemplateModel
-	{
-		public long ApproverId { get; init; }
-	}
-
 	public class ApprovalTemplateModel
 	{
 		[Key]
@@ -22,8 +17,7 @@ namespace ApprovePortal.Server.Models
 		[Required]
 		public string Description { get; init; } = string.Empty;
 
-		public List<ApprovalStepTemplateModel> Steps { get; init; } = [];
-
+		// Navigation property
 		[ForeignKey(nameof(CreatedById))]
 		public virtual UserModel? CreatedBy { get; init; }
 	}

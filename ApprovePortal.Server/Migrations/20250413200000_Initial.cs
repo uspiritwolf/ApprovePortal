@@ -36,8 +36,7 @@ namespace ApprovePortal.Server.Migrations
                     CreatedById = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    State = table.Column<string>(type: "TEXT", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -51,21 +50,25 @@ namespace ApprovePortal.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ApprovalTemplates",
+                name: "ApprovalApprovers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    CreatedById = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Steps = table.Column<string>(type: "TEXT", nullable: false)
+                    ApprovalId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ApprovalTemplates", x => x.Id);
+                    table.PrimaryKey("PK_ApprovalApprovers", x => new { x.ApprovalId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_ApprovalTemplates_Users_CreatedById",
-                        column: x => x.CreatedById,
+                        name: "FK_ApprovalApprovers_Approvals_ApprovalId",
+                        column: x => x.ApprovalId,
+                        principalTable: "Approvals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ApprovalApprovers_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -82,13 +85,13 @@ namespace ApprovePortal.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Approvals_CreatedById",
-                table: "Approvals",
-                column: "CreatedById");
+                name: "IX_ApprovalApprovers_UserId",
+                table: "ApprovalApprovers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ApprovalTemplates_CreatedById",
-                table: "ApprovalTemplates",
+                name: "IX_Approvals_CreatedById",
+                table: "Approvals",
                 column: "CreatedById");
         }
 
@@ -96,10 +99,10 @@ namespace ApprovePortal.Server.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Approvals");
+                name: "ApprovalApprovers");
 
             migrationBuilder.DropTable(
-                name: "ApprovalTemplates");
+                name: "Approvals");
 
             migrationBuilder.DropTable(
                 name: "Users");

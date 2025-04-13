@@ -21,6 +21,24 @@ namespace ApprovePortal.Server.Migrations
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true);
 
+            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalApproverModel", b =>
+                {
+                    b.Property<Guid>("ApprovalId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ApprovalId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ApprovalApprovers");
+                });
+
             modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -37,10 +55,6 @@ namespace ApprovePortal.Server.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -50,34 +64,6 @@ namespace ApprovePortal.Server.Migrations
                     b.HasIndex("CreatedById");
 
                     b.ToTable("Approvals");
-                });
-
-            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalTemplateModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Steps")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.ToTable("ApprovalTemplates");
                 });
 
             modelBuilder.Entity("ApprovePortal.Server.Models.UserModel", b =>
@@ -135,10 +121,29 @@ namespace ApprovePortal.Server.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalApproverModel", b =>
+                {
+                    b.HasOne("ApprovePortal.Server.Models.ApprovalModel", "Approval")
+                        .WithMany("Approver")
+                        .HasForeignKey("ApprovalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApprovePortal.Server.Models.UserModel", "User")
+                        .WithMany("Approvals")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Approval");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalModel", b =>
                 {
                     b.HasOne("ApprovePortal.Server.Models.UserModel", "CreatedBy")
-                        .WithMany("Approvals")
+                        .WithMany("MyApprovals")
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -146,20 +151,16 @@ namespace ApprovePortal.Server.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalTemplateModel", b =>
+            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalModel", b =>
                 {
-                    b.HasOne("ApprovePortal.Server.Models.UserModel", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CreatedBy");
+                    b.Navigation("Approver");
                 });
 
             modelBuilder.Entity("ApprovePortal.Server.Models.UserModel", b =>
                 {
                     b.Navigation("Approvals");
+
+                    b.Navigation("MyApprovals");
                 });
 #pragma warning restore 612, 618
         }
