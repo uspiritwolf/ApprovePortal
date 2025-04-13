@@ -1,4 +1,4 @@
-import { useTransition, useState } from "react"
+import { useTransition, useState, useContext } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -14,18 +14,62 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { UserSelector } from '@/components/user-selector'
+import { UserBaseInfo } from "@/types/UserInfo"
+import { AuthContext } from "@/context/AuthContext"
+import { ApprovalContext } from "@/context/ApprovalContext"
 
 interface NewApprovalContentProps extends React.ComponentProps<typeof DialogContent> {
 	onOpenChange: (open: boolean) => void
 }
 
+type UserArray = (UserBaseInfo | undefined)[];
+
 function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
+	const { token } = useContext(AuthContext)
+	const { refresh } = useContext(ApprovalContext)
 	const [isPending, startTransition] = useTransition()
+	const [approvers, setApprovers] = useState<UserArray>([])
+	const [description, setDescription] = useState<string>("")
+	const [title, setTitle] = useState<string>("")
+
+	const canSubmit = approvers.every((user) => user !== undefined) && title.length > 0 && description.length > 0
 
 	const handleSubmit = () => {
 		startTransition(async () => {
-			await new Promise((resolve) => setTimeout(resolve, 10000))
+			const res = await fetch("/api/approval/create", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"Authorization": `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					Title: title,
+					ApproverIds: approvers.map(e => e!.id),
+					Description: description,
+				}),
+			})
+			if (!res.ok) {
+				console.error("Failed to create approval")
+				return
+			}
+			await refresh()
 			onOpenChange(false)
+		})
+	}
+
+	const handleSelectUser = (key: number, user: UserBaseInfo | undefined) => {
+		setApprovers((prev) => {
+			const newUsers = [...prev]
+			newUsers[key] = user
+			return newUsers
+		})
+	}
+
+	const addUser = () => {
+		setApprovers((prev) => {
+			const newUsers = [...prev]
+			newUsers.push(undefined)
+			return newUsers
 		})
 	}
 
@@ -46,28 +90,30 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 			</DialogHeader>
 			<div className="grid gap-4 py-4">
 				<div className="grid grid-cols-4 items-center gap-4">
-					<Label htmlFor="subject">
+					<Label htmlFor="Title">
 						Tittle
 					</Label>
-					<Input id="subject" value="" className="col-span-3" />
+					<Input id="Title" className="col-span-3" value={title} onChange={(e) => { setTitle(e.currentTarget.value) }} />
 				</div>
 				<Separator />
 				<div className="grid grid-cols-4 w-full gap-1.5">
 					<Label>Approver</Label>
-					<Button variant="outline" size="icon">+</Button>
+					<Button variant="outline" size="icon" onClick={addUser}>+</Button>
 				</div>
-				<div className="grid grid-cols-4 items-center gap-4">
-					<Label>0</Label>
-					<UserSelector />
-				</div>
+				{approvers.map((user, index) => (
+					<div key={index} className="grid grid-cols-4 items-center gap-4">
+						<Label>{index}</Label>
+						<UserSelector value={user} onChange={(u) => handleSelectUser(index, u)} />
+					</div>
+				))}
 				<Separator />
 				<div className="grid w-full gap-1.5">
 					<Label htmlFor="description">Description</Label>
-					<Textarea placeholder="Type your message here." id="description" />
+					<Textarea placeholder="Type your message here." id="description" value={description} onChange={(e) => { setDescription(e.currentTarget.value) }} />
 				</div>
 			</div>
 			<DialogFooter>
-				<Button type="submit" onClick={handleSubmit}>Create</Button>
+				<Button type="submit" onClick={handleSubmit} disabled={!canSubmit}>Submit</Button>
 			</DialogFooter>
 		</DialogContent>
 	)

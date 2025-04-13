@@ -6,13 +6,16 @@ namespace ApprovePortal.Server.Models
 	public record UserModel
 	{
 		[Key]
-		public long Id { get; init; }
+		public Guid Id { get; init; } = Guid.NewGuid();
 
 		[Required, MaxLength(50)]
 		public string Username { get; init; } = string.Empty;
 
 		[Required]
 		public string PasswordHash { get; init; } = string.Empty;
+
+		[Required, MaxLength(256)]
+		public string Name { get; init; } = string.Empty;
 
 		[EmailAddress]
 		public string Email { get; init; } = string.Empty;

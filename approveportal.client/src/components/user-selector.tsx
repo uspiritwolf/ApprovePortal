@@ -17,24 +17,24 @@ import {
 } from "@/components/ui/popover"
 
 import { AuthContext } from "@/context/AuthContext"
+import { UserBaseInfo } from "@/types/UserInfo"
 
-type UserInfo = {
-	id: number
-	username: string
-	email: string
+interface UserSelectorProps {
+	value: UserBaseInfo | undefined;
+	onChange: (value: UserBaseInfo | undefined) => void
 }
 
-export function UserSelector() {
+export function UserSelector({ value, onChange }: UserSelectorProps) {
 	const [open, setOpen] = useState(false)
-	const [selectedUser, setSelectedUser] = useState<UserInfo | undefined>(undefined)
-	const [users, setUsers] = useState<UserInfo[]>([])
+	const [selectedUser, setSelectedUser] = useState<UserBaseInfo | undefined>(value)
+	const [users, setUsers] = useState<UserBaseInfo[]>([])
 	const { token } = useContext(AuthContext)
 
-	const onSelect = (currentValue: string) => {
-		const id = parseInt(currentValue);
-		const user = users.find((user) => user.id === id);
+	const selectHandle = (currentValue: string) => {
+		const user = users.find((user) => user.id === currentValue);
 		setSelectedUser(user)
 		setOpen(false)
+		onChange(user)
 	}
 
 	const searchUser = async (value: string) => {
@@ -47,7 +47,7 @@ export function UserSelector() {
 				"Authorization": `Bearer ${token}`
 			},
 		})
-		const data = await response.json() as UserInfo[]
+		const data = await response.json() as UserBaseInfo[]
 		if (selectedUser && !data.find(user => user.id === selectedUser.id)) {
 			data.push(selectedUser)
 		}
@@ -61,15 +61,15 @@ export function UserSelector() {
 					variant="outline"
 					role="combobox"
 					aria-expanded={open}
-					className="w-[200px] justify-between"
+					className="w-[260px] justify-between"
 				>
 					{selectedUser
-						? selectedUser.username
+						? selectedUser.name
 						: "Search user..."}
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="w-[200px] p-0">
+			<PopoverContent className="w-[260px] p-0">
 				<Command shouldFilter={false}>
 					<CommandInput placeholder="Search user..." onValueChange={searchUser} />
 					<CommandList>
@@ -77,16 +77,17 @@ export function UserSelector() {
 						<CommandGroup>
 							{users.map((user) => (
 								<CommandItem
+									key={user.id}
 									value={user.id.toString()}
-									content={user.username}
-									onSelect={onSelect}>
+									content={user.name}
+									onSelect={selectHandle}>
 									<Check
 										className={cn(
 											"mr-2 h-4 w-4",
 											selectedUser?.id === user.id ? "opacity-100" : "opacity-0"
 										)}
 									/>
-									{user.username} {user.email && user.email !== "" && <>({user.email})</>}
+									{user.name} <p className="text-xs">({user.username})</p>
 								</CommandItem>
 							))}
 						</CommandGroup>

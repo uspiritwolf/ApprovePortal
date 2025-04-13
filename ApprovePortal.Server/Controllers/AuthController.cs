@@ -1,5 +1,6 @@
 ﻿using ApprovePortal.Server.DB;
 using ApprovePortal.Server.DTO;
+using ApprovePortal.Server.Persistence;
 using ApprovePortal.Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,14 +48,16 @@ namespace ApprovePortal.Server.Controllers
 
 		[Authorize]
 		[HttpGet("me")]
-		public IActionResult Me()
+		public IActionResult Me([FromServices] AppDbContext db)
 		{
+			var user = db.GetCurrentUser(this);
+
 			return Ok(new
 			{
-				username = User.Identity?.Name,
-				// TODO: Get email from database
-				email = "Not implemented",
-				role = User.IsInRole("User") ? "User" : "Admin"
+				id = user.Id,
+				username = user.Username,
+				email = user.Email,
+				role = User.IsInRole("User") ? "User" : ""
 			});
 		}
 	}

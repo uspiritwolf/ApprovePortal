@@ -40,9 +40,38 @@ namespace ApprovePortal.Server.DB
 					v => JsonSerializer.Deserialize<List<ApprovalStepTemplateModel>>(v, options)!
 				);
 
-			// Create Default Admin
-			modelBuilder.Entity<UserModel>().HasData(
-				new UserModel { Id = 1, Username = "Admin", PasswordHash = AuthController.ComputeSha256Hash("Admin") }
+			// Create Default Users
+			_ = modelBuilder.Entity<UserModel>().HasData(
+				new UserModel
+				{
+					Id = new Guid("4c1f2876-150a-4f13-94f5-cd3d2d9ce3b9"),
+					Username = "Admin",
+					Email = "admin@gmail.com",
+					Name = "Administrator",
+					PasswordHash = AuthController.ComputeSha256Hash("Admin")
+				}
+			);
+
+			_ = modelBuilder.Entity<UserModel>().HasData(
+				new UserModel
+				{
+					Id = new Guid("6c6570fd-f125-477d-9c47-2ee19f995d35"),
+					Username = "User1",
+					Email = "oleksii.chernykh@gmail.com",
+					Name = "Oleksii Chernykh",
+					PasswordHash = AuthController.ComputeSha256Hash("User1")
+				}
+			);
+
+			_ = modelBuilder.Entity<UserModel>().HasData(
+				new UserModel
+				{
+					Id = new Guid("d986bc44-a453-41f5-a469-5bf4737ea25f"),
+					Username = "User2",
+					Email = "o.yashina@khai.edu",
+					Name = "Olena Yashina",
+					PasswordHash = AuthController.ComputeSha256Hash("User2")
+				}
 			);
 		}
 	}

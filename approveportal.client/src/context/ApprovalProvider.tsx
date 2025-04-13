@@ -77,7 +77,7 @@ export function ApprovalProvider({ children }: ApprovalProviderProps) {
 	}, [refresh, isAuthBusy]);
 
 	return (
-		<ApprovalContext.Provider value={state}>
+		<ApprovalContext.Provider value={{ ...state, refresh }}>
 			{children}
 		</ApprovalContext.Provider>
 	);

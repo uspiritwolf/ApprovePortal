@@ -11,7 +11,7 @@ namespace ApprovePortal.Server.Models
 
 	public class ApprovalStateStepModel
 	{
-		public long ApproverId { get; init; }
+		public Guid ApproverId { get; init; }
 
 		public ApprovalStatus Status { get; init; } = ApprovalStatus.Pending;
 	}

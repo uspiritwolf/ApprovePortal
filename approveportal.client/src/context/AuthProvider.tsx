@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useReducer, useEffect } from 'react';
-import { AuthContext, UserInfo } from '@/context/AuthContext'
+import { AuthContext, UserProfileInfo } from '@/context/AuthContext'
 
 interface AuthProviderProps {
 	children: ReactNode;
@@ -8,12 +8,12 @@ interface AuthProviderProps {
 type AuthProviderState = {
 	isBusy: boolean;
 	token: string | null;
-	user: UserInfo | null;
+	user: UserProfileInfo | null;
 }
 
 export type AuthActions =
 	| { type: 'REFRESH_START', token: string }
-	| { type: 'REFRESH_SUCCESS', user: UserInfo }
+	| { type: 'REFRESH_SUCCESS', user: UserProfileInfo }
 	| { type: 'LOG_OUT' };
 
 function authReducer(state: AuthProviderState, action: AuthActions): AuthProviderState {
@@ -61,14 +61,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 			dispatch({ type: 'REFRESH_START', token })
 		}
 
-		const response = await fetch('api/auth/me', {
+		const response = await fetch('/api/auth/me', {
 			headers: {
 				'Authorization': `Bearer ${token}`
 			}
 		})
 
 		if (response.ok) {
-			const data = await response.json() as UserInfo
+			const data = await response.json() as UserProfileInfo
 			dispatch({
 				type: 'REFRESH_SUCCESS',
 				user: data

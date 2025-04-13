@@ -21,6 +21,7 @@ namespace ApprovePortal.Server.Controllers
 				{
 					u.Id,
 					u.Username,
+					u.Name,
 					u.Email
 				})
 				.ToList();

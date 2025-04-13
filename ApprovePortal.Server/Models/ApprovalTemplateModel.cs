@@ -11,10 +11,10 @@ namespace ApprovePortal.Server.Models
 	public class ApprovalTemplateModel
 	{
 		[Key]
-		public long Id { get; set; }
+		public Guid Id { get; init; } = Guid.NewGuid();
 
 		[Required]
-		public long CreatedById { get; init; }
+		public Guid CreatedById { get; init; }
 
 		[Required]
 		public string Title { get; init; } = string.Empty;
