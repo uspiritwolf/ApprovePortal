@@ -2,6 +2,6 @@
 {
 	public class AppSettings
 	{
-		public required string SecretKey { get; set; }
+		public string SecretKey { get; init; } = string.Empty;
 	}
 }
