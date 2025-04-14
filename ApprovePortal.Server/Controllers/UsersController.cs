@@ -13,19 +13,31 @@ namespace ApprovePortal.Server.Controllers
 	{
 
 		[HttpGet("search")]
-		public IActionResult Search([FromQuery] string q, [FromServices] AppDbContext db)
+		public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int? f, [FromServices] AppDbContext db, CancellationToken ct)
 		{
-			var users = db.Users
-				.Where(u => EF.Functions.Like(u.Username, $"%{q}%") || EF.Functions.Like(u.Email, $"%{q}%"))
+			var query = db.Users.AsQueryable().AsNoTracking();
+
+			if (q is not null)
+			{
+				query = query.Where(u => u.Username.Contains(q) || u.Name.Contains(q) || u.Email.Contains(q));
+			}
+
+			if (f is not null)
+			{
+				query = query.Take(f ?? 10);
+			}
+
+			var result = await query
+				.OrderBy(u => u.Username).ThenBy(u => u.Name).ThenBy(u => u.Email)
 				.Select(u => new
 				{
 					u.Id,
 					u.Username,
 					u.Name,
 					u.Email
-				})
-				.ToList();
-			return Ok(users);
+				}).ToListAsync(ct);
+
+			return Ok(result);
 		}
 	}
 }

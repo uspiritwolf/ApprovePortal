@@ -1,4 +1,4 @@
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,20 @@ interface UserSelectorProps {
 	onChange: (value: UserBaseInfo | undefined) => void
 }
 
+async function SearchUser(token: string, str: string | null, first: number | null = null): Promise<UserBaseInfo[]> {
+	const params = new URLSearchParams()
+	if (first) params.append("f", first.toString())
+	if (str) params.append("q", str)
+	const query = params.toString()
+	const response = await fetch(`/api/users/search?${query}`, {
+		method: "GET",
+		headers: {
+			"Authorization": `Bearer ${token}`
+		},
+	})
+	return await response.json() as UserBaseInfo[]
+}
+
 export function UserSelector({ value, onChange }: UserSelectorProps) {
 	const [open, setOpen] = useState(false)
 	const [selectedUser, setSelectedUser] = useState<UserBaseInfo | undefined>(value)
@@ -38,21 +52,23 @@ export function UserSelector({ value, onChange }: UserSelectorProps) {
 	}
 
 	const searchUser = async (value: string) => {
-		if (value === "") {
-			return
-		}
-		const response = await fetch(`/api/users/search?q=${value}`, {
-			method: "GET",
-			headers: {
-				"Authorization": `Bearer ${token}`
-			},
-		})
-		const data = await response.json() as UserBaseInfo[]
+		const data = await SearchUser(token!, value, null)
 		if (selectedUser && !data.find(user => user.id === selectedUser.id)) {
 			data.push(selectedUser)
 		}
 		setUsers(data)
 	}
+
+	useEffect(() => {
+		if (!token) return
+
+		const fetchInitialUsers = async () => {
+			const initialUsers = await SearchUser(token, null, 10)
+			setUsers(initialUsers)
+		}
+
+		fetchInitialUsers()
+	}, [token])
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
