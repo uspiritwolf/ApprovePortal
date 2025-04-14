@@ -40,21 +40,19 @@ async function SearchUser(token: string, str: string | null, first: number | nul
 
 export function UserSelector({ value, onChange }: UserSelectorProps) {
 	const [open, setOpen] = useState(false)
-	const [selectedUser, setSelectedUser] = useState<UserBaseInfo | undefined>(value)
 	const [users, setUsers] = useState<UserBaseInfo[]>([])
 	const { token } = useContext(AuthContext)
 
 	const selectHandle = (currentValue: string) => {
 		const user = users.find((user) => user.id === currentValue);
-		setSelectedUser(user)
 		setOpen(false)
 		onChange(user)
 	}
 
-	const searchUser = async (value: string) => {
-		const data = await SearchUser(token!, value, null)
-		if (selectedUser && !data.find(user => user.id === selectedUser.id)) {
-			data.push(selectedUser)
+	const searchUser = async (newValue: string) => {
+		const data = await SearchUser(token!, newValue, null)
+		if (value && !data.find(user => user.id === value.id)) {
+			data.push(value)
 		}
 		setUsers(data)
 	}
@@ -79,8 +77,8 @@ export function UserSelector({ value, onChange }: UserSelectorProps) {
 					aria-expanded={open}
 					className="w-[260px] justify-between"
 				>
-					{selectedUser
-						? selectedUser.name
+					{value
+						? value.name
 						: "Search user..."}
 					<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 				</Button>
@@ -100,7 +98,7 @@ export function UserSelector({ value, onChange }: UserSelectorProps) {
 									<Check
 										className={cn(
 											"mr-2 h-4 w-4",
-											selectedUser?.id === user.id ? "opacity-100" : "opacity-0"
+											value?.id === user.id ? "opacity-100" : "opacity-0"
 										)}
 									/>
 									{user.name} <p className="text-xs">({user.username})</p>
