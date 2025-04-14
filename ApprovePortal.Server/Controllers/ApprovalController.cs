@@ -15,12 +15,13 @@ namespace ApprovePortal.Server.Controllers
 	{
 
 		[HttpGet("list")]
-		public async Task<IActionResult> GetList([FromServices] AppDbContext db)
+		public async Task<IActionResult> GetList([FromServices] AppDbContext db, CancellationToken ct)
 		{
 			var user = db.GetCurrentUser(this);
 
 			var myApprovals = db.Entry(user).Collection(u => u.MyApprovals)
 				.Query()
+				.AsNoTracking()
 				.Include(a => a.CreatedBy)
 				.Include(a => a.Approvers).ThenInclude(aa => aa.User)
 				.OrderByDescending(a => a.CreatedAt)
@@ -46,10 +47,11 @@ namespace ApprovePortal.Server.Controllers
 						Email = aa.User.Email,
 						Status = aa.Status.ToString(),
 					}),
-				}).ToListAsync();
+				}).ToListAsync(ct);
 
 			var otherApprovals = db.Entry(user).Collection(u => u.Approvals)
 				.Query()
+				.AsNoTracking()
 				.Include(a => a.User)
 				.Include(a => a.Approval).ThenInclude(aa => aa.CreatedBy)
 				.OrderByDescending(a => a.Approval.CreatedAt)
@@ -75,7 +77,7 @@ namespace ApprovePortal.Server.Controllers
 						Email = aa.User.Email,
 						Status = aa.Status.ToString(),
 					}),
-				}).ToListAsync();
+				}).ToListAsync(ct);
 
 			var allApprovals = (await myApprovals).Concat(await otherApprovals).OrderByDescending(a => a.CreatedAt);
 
@@ -89,8 +91,12 @@ namespace ApprovePortal.Server.Controllers
 				return BadRequest("At least one approver is required.");
 
 			var user = db.GetCurrentUser(this);
+
 			if (req.ApproverIds.Any(a => a == user.Id))
 				return BadRequest("You cannot approve your own approval.");
+
+			if (req.ApproverIds.Distinct().Count() != req.ApproverIds.Length)
+				return BadRequest("Approvers must be unique.");
 
 			using var transaction = await db.Database.BeginTransactionAsync();
 
@@ -126,6 +132,36 @@ namespace ApprovePortal.Server.Controllers
 				await transaction.RollbackAsync();
 				return BadRequest(ex.Message);
 			}
+		}
+
+		[HttpPost("approve/{id}")]
+		public async Task<IActionResult> Approve([FromRoute] Guid id, [FromServices] AppDbContext db, CancellationToken ct)
+		{
+			var user = db.GetCurrentUser(this);
+			var rowsAffected = await db.ApprovalApprovers
+				.Where(a => a.ApprovalId == id && a.UserId == user.Id)
+				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatus.Approved), ct);
+
+			if (rowsAffected == 0)
+				return NotFound("No matching approver entry found.");
+
+			await db.SaveChangesAsync(ct);
+			return Ok();
+		}
+
+		[HttpPost("reject/{id}")]
+		public async Task<IActionResult> Reject([FromRoute] Guid id, [FromServices] AppDbContext db, CancellationToken ct)
+		{
+			var user = db.GetCurrentUser(this);
+			var rowsAffected = await db.ApprovalApprovers
+				.Where(a => a.ApprovalId == id && a.UserId == user.Id)
+				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatus.Rejected), ct);
+
+			if (rowsAffected == 0)
+				return NotFound("No matching approver entry found.");
+
+			await db.SaveChangesAsync(ct);
+			return Ok();
 		}
 	}
 }

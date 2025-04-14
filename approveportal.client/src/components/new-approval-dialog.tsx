@@ -119,7 +119,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 				</div>
 				{approvers.map((user, index) => (
 					<div key={index} className="grid grid-cols-4 items-center gap-4">
-						<Label>{index}</Label>
+						<Label>{index + 1}</Label>
 						<UserSelector value={user} onChange={(u) => handleSelectUser(index, u)} />
 					</div>
 				))}
