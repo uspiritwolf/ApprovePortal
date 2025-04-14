@@ -14,12 +14,19 @@ namespace ApprovePortal.Server.Services
 
 		public string GenerateToken(UserModel user)
 		{
-			var claims = new[]
+			var claims = new List<Claim>
 			{
 				new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-				new Claim(ClaimTypes.Name, user.Username),
-				new Claim(ClaimTypes.Role, "User"),
 			};
+
+			if (user.Roles.HasFlag(UserRoleFlags.User))
+			{
+				claims.Add(new Claim(ClaimTypes.Role, UserRoleFlags.User.ToString()));
+			}
+			if (user.Roles.HasFlag(UserRoleFlags.Manager))
+			{
+				claims.Add(new Claim(ClaimTypes.Role, UserRoleFlags.Manager.ToString()));
+			}
 
 			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.SecretKey));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

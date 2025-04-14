@@ -27,17 +27,17 @@ namespace ApprovePortal.Server.Models
 		public virtual ICollection<ApprovalApproverModel> Approvers { get; init; } = new List<ApprovalApproverModel>();
 
 		// Business logic to compute the current approval status
-		public ApprovalStatus ComputeStatus()
+		public ApprovalStatusEnum ComputeStatus()
 		{
-			if (Approvers.All(a => a.Status == ApprovalStatus.Approved))
+			if (Approvers.All(a => a.Status == ApprovalStatusEnum.Approved))
 			{
-				return ApprovalStatus.Approved;
+				return ApprovalStatusEnum.Approved;
 			}
-			if (Approvers.Any(a => a.Status == ApprovalStatus.Rejected))
+			if (Approvers.Any(a => a.Status == ApprovalStatusEnum.Rejected))
 			{
-				return ApprovalStatus.Rejected;
+				return ApprovalStatusEnum.Rejected;
 			}
-			return ApprovalStatus.Pending;
+			return ApprovalStatusEnum.Pending;
 		}
 	}
 }

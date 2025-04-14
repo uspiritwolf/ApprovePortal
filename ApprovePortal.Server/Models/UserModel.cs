@@ -20,6 +20,9 @@ namespace ApprovePortal.Server.Models
 		[EmailAddress]
 		public string Email { get; init; } = string.Empty;
 
+		[Required]
+		public UserRoleFlags Roles { get; init; } = UserRoleFlags.User;
+
 		// Navigation property
 		[InverseProperty(nameof(ApprovalModel.CreatedBy))]
 		public virtual ICollection<ApprovalModel> MyApprovals { get; init; } = null!;

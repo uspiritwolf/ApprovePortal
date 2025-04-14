@@ -12,6 +12,8 @@ namespace ApprovePortal.Server.DB
 
 		public DbSet<ApprovalApproverModel> ApprovalApprovers { get; set; }
 
+		public DbSet<ApprovalTemplateModel> Templates { get; set; }
+
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
 			var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app.db");
@@ -31,7 +33,8 @@ namespace ApprovePortal.Server.DB
 					Username = "Admin",
 					Email = "admin@gmail.com",
 					Name = "Administrator",
-					PasswordHash = AuthController.ComputeSha256Hash("Admin")
+					PasswordHash = AuthController.ComputeSha256Hash("Admin"),
+					Roles = UserRoleFlags.User | UserRoleFlags.Manager
 				}
 			);
 
@@ -42,7 +45,8 @@ namespace ApprovePortal.Server.DB
 					Username = "User1",
 					Email = "oleksii.chernykh@gmail.com",
 					Name = "Oleksii Chernykh",
-					PasswordHash = AuthController.ComputeSha256Hash("User1")
+					PasswordHash = AuthController.ComputeSha256Hash("User1"),
+					Roles = UserRoleFlags.User
 				}
 			);
 
@@ -53,7 +57,8 @@ namespace ApprovePortal.Server.DB
 					Username = "User2",
 					Email = "o.yashina@khai.edu",
 					Name = "Olena Yashina",
-					PasswordHash = AuthController.ComputeSha256Hash("User2")
+					PasswordHash = AuthController.ComputeSha256Hash("User2"),
+					Roles = UserRoleFlags.User
 				}
 			);
 		}

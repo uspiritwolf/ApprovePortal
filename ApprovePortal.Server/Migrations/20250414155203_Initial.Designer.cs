@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApprovePortal.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250413223234_Initial")]
+    [Migration("20250414155203_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -69,6 +69,34 @@ namespace ApprovePortal.Server.Migrations
                     b.ToTable("Approvals");
                 });
 
+            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalTemplateModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("ApproverIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("Templates");
+                });
+
             modelBuilder.Entity("ApprovePortal.Server.Models.UserModel", b =>
                 {
                     b.Property<Guid>("Id")
@@ -88,6 +116,9 @@ namespace ApprovePortal.Server.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("Roles")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -104,6 +135,7 @@ namespace ApprovePortal.Server.Migrations
                             Email = "admin@gmail.com",
                             Name = "Administrator",
                             PasswordHash = "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f",
+                            Roles = 6,
                             Username = "Admin"
                         },
                         new
@@ -112,6 +144,7 @@ namespace ApprovePortal.Server.Migrations
                             Email = "oleksii.chernykh@gmail.com",
                             Name = "Oleksii Chernykh",
                             PasswordHash = "27a534a25cf745b6c985eb782079a6fe8641b00003dada14f392a2d01b9c790a",
+                            Roles = 2,
                             Username = "User1"
                         },
                         new
@@ -120,6 +153,7 @@ namespace ApprovePortal.Server.Migrations
                             Email = "o.yashina@khai.edu",
                             Name = "Olena Yashina",
                             PasswordHash = "0e238ae88aef5a81ba9d297b5df67e74af15d168e5b765db22227c91b8672285",
+                            Roles = 2,
                             Username = "User2"
                         });
                 });
@@ -147,6 +181,17 @@ namespace ApprovePortal.Server.Migrations
                 {
                     b.HasOne("ApprovePortal.Server.Models.UserModel", "CreatedBy")
                         .WithMany("MyApprovals")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("ApprovePortal.Server.Models.ApprovalTemplateModel", b =>
+                {
+                    b.HasOne("ApprovePortal.Server.Models.UserModel", "CreatedBy")
+                        .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

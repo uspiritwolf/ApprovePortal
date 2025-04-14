@@ -10,7 +10,7 @@ namespace ApprovePortal.Server.Models
 
 		public required Guid UserId { get; set; }
 
-		public required ApprovalStatus Status { get; set; }
+		public required ApprovalStatusEnum Status { get; set; }
 
 		// Navigation properties
 		[ForeignKey(nameof(ApprovalId))]

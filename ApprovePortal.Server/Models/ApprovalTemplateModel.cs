@@ -9,16 +9,19 @@ namespace ApprovePortal.Server.Models
 		public Guid Id { get; init; } = Guid.NewGuid();
 
 		[Required]
-		public Guid CreatedById { get; init; }
+		public required Guid CreatedById { get; init; }
 
 		[Required]
-		public string Title { get; init; } = string.Empty;
+		public required string Title { get; init; } = string.Empty;
 
 		[Required]
-		public string Description { get; init; } = string.Empty;
+		public required string Description { get; init; } = string.Empty;
+
+		[Required]
+		public required List<Guid> ApproverIds { get; init; } = new();
 
 		// Navigation property
 		[ForeignKey(nameof(CreatedById))]
-		public virtual UserModel? CreatedBy { get; init; }
+		public virtual UserModel CreatedBy { get; init; } = null!;
 	}
 }

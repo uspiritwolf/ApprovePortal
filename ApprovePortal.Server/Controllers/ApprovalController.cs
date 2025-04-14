@@ -116,7 +116,7 @@ namespace ApprovePortal.Server.Controllers
 				{
 					ApprovalId = entry.Entity.Id,
 					UserId = approverId,
-					Status = ApprovalStatus.Pending,
+					Status = ApprovalStatusEnum.Pending,
 				}).AsTask());
 
 				Task.WaitAll(tasks.ToList(), ct);
@@ -140,7 +140,7 @@ namespace ApprovePortal.Server.Controllers
 			var user = db.GetCurrentUser(this);
 			var rowsAffected = await db.ApprovalApprovers
 				.Where(a => a.ApprovalId == id && a.UserId == user.Id)
-				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatus.Approved), ct);
+				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatusEnum.Approved), ct);
 
 			if (rowsAffected == 0)
 				return NotFound("No matching approver entry found.");
@@ -155,11 +155,65 @@ namespace ApprovePortal.Server.Controllers
 			var user = db.GetCurrentUser(this);
 			var rowsAffected = await db.ApprovalApprovers
 				.Where(a => a.ApprovalId == id && a.UserId == user.Id)
-				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatus.Rejected), ct);
+				.ExecuteUpdateAsync(a => a.SetProperty(aa => aa.Status, ApprovalStatusEnum.Rejected), ct);
 
 			if (rowsAffected == 0)
 				return NotFound("No matching approver entry found.");
 
+			await db.SaveChangesAsync(ct);
+			return Ok();
+		}
+
+		[HttpPost("template")]
+		[Authorize(Roles = nameof(UserRoleFlags.Manager))]
+		public async Task<IActionResult> CreateTempalte([FromBody] CreateApprovalRequest req, [FromServices] AppDbContext db, CancellationToken ct)
+		{
+			if (req.ApproverIds.Length == 0)
+				return BadRequest("At least one approver is required.");
+
+			var user = db.GetCurrentUser(this);
+
+			if (req.ApproverIds.Any(a => a == user.Id))
+				return BadRequest("You cannot approve your own approval.");
+
+			if (req.ApproverIds.Distinct().Count() != req.ApproverIds.Length)
+				return BadRequest("Approvers must be unique.");
+
+			var entry = await db.Templates.AddAsync(new ApprovalTemplateModel
+			{
+				Title = req.Title,
+				Description = req.Description,
+				CreatedById = user.Id,
+				ApproverIds = req.ApproverIds.ToList(),
+			}, ct);
+
+			await db.SaveChangesAsync(ct);
+
+			return Ok();
+		}
+
+		[HttpGet("templates")]
+		public async Task<IActionResult> GetTemplates([FromServices] AppDbContext db, CancellationToken ct)
+		{
+			var result = await db.Templates.Select(t => new
+			{
+				Id = t.Id,
+				Title = t.Title,
+				Description = t.Description,
+				Approvers = t.ApproverIds
+			}).ToListAsync(ct);
+
+			return Ok(result);
+		}
+
+		[HttpDelete("template/{id}")]
+		[Authorize(Roles = nameof(UserRoleFlags.Manager))]
+		public async Task<IActionResult> DeleteTemplate([FromRoute] Guid id, [FromServices] AppDbContext db, CancellationToken ct)
+		{
+			var template = await db.Templates.FindAsync([id], ct);
+			if (template == null)
+				return NotFound("Template not found.");
+			db.Templates.Remove(template);
 			await db.SaveChangesAsync(ct);
 			return Ok();
 		}

@@ -1,5 +1,6 @@
 ﻿using ApprovePortal.Server.DB;
 using ApprovePortal.Server.DTO;
+using ApprovePortal.Server.Models;
 using ApprovePortal.Server.Persistence;
 using ApprovePortal.Server.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -58,7 +59,7 @@ namespace ApprovePortal.Server.Controllers
 				username = user.Username,
 				email = user.Email,
 				name = user.Name,
-				role = User.IsInRole("User") ? "User" : ""
+				role = user.Roles.GetMajorRole()
 			});
 		}
 	}
