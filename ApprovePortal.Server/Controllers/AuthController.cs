@@ -47,6 +47,31 @@ namespace ApprovePortal.Server.Controllers
 			});
 		}
 
+		[HttpPost("register")]
+		public async Task<IActionResult> Register([FromBody] RegisterRequest req, [FromServices] AppDbContext db, CancellationToken ct)
+		{
+			var user = db.Users.Where(u => u.Username == req.Username).FirstOrDefault();
+
+			if (user != null)
+				return BadRequest("The user already exists");
+
+			var entry = await db.Users.AddAsync(new UserModel
+			{
+				Username = req.Username,
+				PasswordHash = ComputeSha256Hash(req.Password),
+				Email = req.Email,
+				Name = req.Name,
+				Roles = UserRoleFlags.User
+			}, ct);
+
+			await db.SaveChangesAsync(ct);
+
+			return Ok(new
+			{
+				token = authService.GenerateToken(entry.Entity)
+			});
+		}
+
 		[Authorize]
 		[HttpGet("me")]
 		public IActionResult Me([FromServices] AppDbContext db)

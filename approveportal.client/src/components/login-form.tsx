@@ -17,9 +17,14 @@ import {
 	AlertDescription,
 	AlertTitle,
 } from "@/components/ui/alert"
-
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@/components/ui/tabs"
 import { AuthContext } from "@/context/AuthContext"
-
+import { getErrorStr } from "@/utils"
 interface LoginFormProps extends React.HTMLAttributes<HTMLDivElement>
 {
 	className?: string;
@@ -31,7 +36,7 @@ export function LoginForm({ className, ...props }: LoginFormProps)
 	const { onLogin } = useContext(AuthContext);
 	const [error, setError] = useState<string | null>(null);
 
-	async function sumbit(formData: FormData) {
+	async function sumbitLogin(formData: FormData) {
 		const request = {
 			username: formData.get("username"),
 			password: formData.get("password"),
@@ -58,13 +63,39 @@ export function LoginForm({ className, ...props }: LoginFormProps)
 		}
 		else
 		{
-			const data = await response.json()
-			let errorStr = data.title
-			for (const key in data.errors) {
-				errorStr += data.errors[key] + ' ';
-			}
-			setError(errorStr)
+			setError(await getErrorStr(response))
 			return
+		}
+	}
+
+	async function submitRegister(formData: FormData) {
+		const request = {
+			username: formData.get("username"),
+			password: formData.get("password"),
+			email: formData.get("email"),
+			name: formData.get("name"),
+		}
+
+		const response = await fetch("api/auth/register", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(request),
+		})
+		if (response.ok) {
+			setError('')
+			const res = await response.json()
+			onLogin(res.token as string)
+				.then(() => {
+					navigate('/')
+				})
+				.catch((e: Error) => {
+					setError(e.message)
+				});
+		}
+		else {
+			setError(await getErrorStr(response))
 		}
 	}
 
@@ -78,31 +109,80 @@ export function LoginForm({ className, ...props }: LoginFormProps)
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form action={sumbit}>
-						<div className="flex flex-col gap-6">
-							<div className="grid gap-2">
-								<Label htmlFor="username">Username</Label>
-								<Input
-									id="username"
-									name="username"
-									type="text"
-									required
-								/>
-							</div>
-							<div className="grid gap-2">
-								<Label htmlFor="password">Password</Label>
-								<Input
-									id="password"
-									name="password"
-									type="password"
-									required />
-							</div>
-							<Button type="submit" className="w-full">
-								Login
-							</Button>
-						</div>
-					</form>
-					{error &&
+					<Tabs defaultValue="login">
+						<TabsList className="grid w-full grid-cols-2">
+							<TabsTrigger value="login">Login</TabsTrigger>
+							<TabsTrigger value="register">Register</TabsTrigger>
+						</TabsList>
+						<TabsContent value="login">
+							<form action={sumbitLogin}>
+								<div className="flex flex-col gap-6">
+									<div className="grid gap-2">
+										<Label htmlFor="username">Username</Label>
+										<Input
+											id="username"
+											name="username"
+											type="text"
+											required
+										/>
+									</div>
+									<div className="grid gap-2">
+										<Label htmlFor="password">Password</Label>
+										<Input
+											id="password"
+											name="password"
+											type="password"
+											required />
+									</div>
+									<Button type="submit" className="w-full">
+										Login
+									</Button>
+								</div>
+							</form>
+						</TabsContent>
+						<TabsContent value="register">
+							<form action={submitRegister}>
+								<div className="flex flex-col gap-6">
+									<div className="grid gap-2">
+										<Label htmlFor="username">Username</Label>
+										<Input
+											id="username"
+											name="username"
+											type="text"
+											required
+										/>
+									</div>
+									<div className="grid gap-2">
+										<Label htmlFor="email">Email</Label>
+										<Input
+											id="email"
+											name="email"
+											type="email"
+											required />
+									</div>
+									<div className="grid gap-2">
+										<Label htmlFor="name">Name</Label>
+										<Input
+											id="name"
+											name="name"
+											type="text"
+											required />
+									</div>
+									<div className="grid gap-2">
+										<Label htmlFor="password">Password</Label>
+										<Input
+											id="password"
+											name="password"
+											type="password"
+											required />
+									</div>
+									<Button type="submit" className="w-full">
+										Login
+									</Button>
+								</div>
+							</form>
+						</TabsContent>
+						{error &&
 						<div className="pt-6">
 							<Alert variant="destructive">
 								<AlertTitle>Failed</AlertTitle>
@@ -110,8 +190,8 @@ export function LoginForm({ className, ...props }: LoginFormProps)
 									{error}
 								</AlertDescription>
 							</Alert>
-						</div>
-					}
+						</div>}
+					</Tabs>
 				</CardContent>
 			</Card>
 		</div>
