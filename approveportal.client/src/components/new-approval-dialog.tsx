@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/tabs"
 import { TemplateSelector } from "@/components/template-selector"
 import { TemplateApproval } from "@/types/TemplateApproval"
+import { getErrorStr } from "@/utils"
 
 interface NewApprovalContentProps extends React.ComponentProps<typeof DialogContent> {
 	onOpenChange: (open: boolean) => void
@@ -68,8 +69,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 				}),
 			})
 			if (!response.ok) {
-				const errorStr = await response.text()
-				setError(errorStr)
+				setError(await getErrorStr(response))
 				return
 			}
 			await refresh()
@@ -129,7 +129,7 @@ function NewApprovalContent({ onOpenChange }: NewApprovalContentProps) {
 					</Alert>
 				}
 			</DialogHeader>
-			<Tabs defaultValue="account" value={tab} onValueChange={setTab}>
+			<Tabs value={tab} onValueChange={setTab}>
 				<TabsList className="grid w-full grid-cols-2">
 					<TabsTrigger value="new">Create a new</TabsTrigger>
 					<TabsTrigger value="template">Use Template</TabsTrigger>
