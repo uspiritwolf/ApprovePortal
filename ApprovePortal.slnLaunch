@@ -3,14 +3,14 @@
     "Name": "Default",
     "Projects": [
       {
-        "Path": "ApprovePortal.Server\\ApprovePortal.Server.csproj",
-        "Action": "Start",
-        "DebugTarget": "https"
-      },
-      {
         "Path": "approveportal.client\\approveportal.client.esproj",
         "Action": "Start",
         "DebugTarget": "localhost (Chrome)"
+      },
+      {
+        "Path": "ApprovePortal.Server\\ApprovePortal.Server.csproj",
+        "Action": "Start",
+        "DebugTarget": "https"
       }
     ]
   }
