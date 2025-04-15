@@ -173,9 +173,6 @@ namespace ApprovePortal.Server.Controllers
 
 			var user = db.GetCurrentUser(this);
 
-			if (req.ApproverIds.Any(a => a == user.Id))
-				return BadRequest("You cannot approve your own approval.");
-
 			if (req.ApproverIds.Distinct().Count() != req.ApproverIds.Length)
 				return BadRequest("Approvers must be unique.");
 
@@ -195,13 +192,23 @@ namespace ApprovePortal.Server.Controllers
 		[HttpGet("templates")]
 		public async Task<IActionResult> GetTemplates([FromServices] AppDbContext db, CancellationToken ct)
 		{
-			var result = await db.Templates.Select(t => new
+			var templates = await db.Templates.ToListAsync(ct);
+
+			var result = templates.Select(t => new
 			{
 				Id = t.Id,
 				Title = t.Title,
 				Description = t.Description,
-				Approvers = t.ApproverIds
-			}).ToListAsync(ct);
+				CreatedById = t.CreatedById,
+				Approvers = db.Users
+					.Where(u => t.ApproverIds.Contains(u.Id))
+					.Select(u => new
+					{
+						Id = u.Id,
+						Name = u.Name,
+						Email = u.Email,
+					}).ToList()
+			});
 
 			return Ok(result);
 		}

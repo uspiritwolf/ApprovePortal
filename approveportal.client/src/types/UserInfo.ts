@@ -6,6 +6,8 @@ export interface UserBaseInfo {
 	name: string
 }
 
+export type RoleType = 'Manager' | 'User';
+
 export interface UserProfileInfo extends UserBaseInfo {
-	role: string;
+	role: RoleType;
 }
